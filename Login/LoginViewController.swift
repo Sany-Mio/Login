@@ -19,42 +19,71 @@ class LoginViewController: UIViewController {
     private let user = "User"
     private let password = "Password"
 
-// MARK: - navigation
+    // MARK: - Navigation
+
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         guard let welcomeVC = segue.destination as? WelcomeViewController else { return }
         welcomeVC.user = user
     }
 
-
     // MARK: - IB Actions
 
-
     @IBAction func showAlertLoginAction() {
-        if userTextField.text == user && passwordTextField.text == password {
-// я не знаю как сюда запихать алерт и  проверку кода 😭😭😭 я в отчаянии (((
+        guard userTextField.text == user, passwordTextField.text == password else
+        {
+            showAlert(
+                title: "Invalid login or password",
+                message: "Please, enter correct login and password",
+                textField: passwordTextField
+            )
+            return
+        }
+        performSegue(withIdentifier: "showWelcomeVC", sender: nil)
     }
+
+    @IBAction func forgotButtenAction(_ sender: UIButton) {
+        sender.tag == 0
+        ? showAlert(title: "Oops!", message: "Your name is \(user) 😉")
+        : showAlert(title: "Oops!", message: "Your password is \(password) 😉")
     }
-    @IBAction func forgotUserNameButton(_ sender: UIButton) {
+
+    @IBAction func unwindSegue(segue: UIStoryboardSegue) {
+        userTextField.text = ""
+        passwordTextField.text = ""
+    }
+}
+
+// MARK: - Alert Controller
+
+extension LoginViewController {
+    private func showAlert(title: String, message: String, textField: UITextField? = nil) {
         let alert = UIAlertController(
-            title: "Oops!",
-            message: "Your name is \(user) 😉",
+            title: title,
+            message: message,
             preferredStyle: .alert
         )
-        let okButton = UIAlertAction(title: "OK", style: .default)
+        let okButton = UIAlertAction(title: "OK", style: .default) { _ in textField?.text = ""
+        }
         alert.addAction(okButton)
         present(alert, animated: true)
     }
+}
 
-    @IBAction func forgotPasswordButton(_ sender: UIButton) {
-        let alert = UIAlertController(
-            title: "Oops!",
-            message: "Your password is \(password) 😉",
-            preferredStyle: .alert
-        )
-        let okButton = UIAlertAction(title: "OK", style: .default)
-        alert.addAction(okButton)
-        present(alert, animated: true)
+// MARK: - Keyboard
+
+extension LoginViewController: UITextFieldDelegate {
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        super.touchesBegan(touches, with: event)
+        view.endEditing(true)
     }
 
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        if textField == userTextField {
+            passwordTextField.becomeFirstResponder()
+        } else {
+            showAlertLoginAction()
+        }
+        return true
+    }
 }
 
